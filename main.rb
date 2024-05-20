@@ -43,6 +43,15 @@ def move_player(direction)
   $map_confirm = true
 end
 
+def check_event(map)
+  if map == 9
+    ''
+  else
+    map -= 1 if map > 9
+    $MAPEVENT_DESC[$mapevents[map]][:name]
+  end
+end
+
 Window.width = 1280
 Window.height = 720
 
@@ -54,7 +63,7 @@ $message = ''
 Window.load_resources do
   # ここの処理はinit関数にあとで切り出す
   battle = Battle.new(1)
-  mapevents = $MAPEVENT.shuffle
+  $mapevents = $MAPEVENT.shuffle
 
   Window.loop do
 
@@ -65,7 +74,6 @@ Window.load_resources do
       $top_bar_message = '進むタイルを選べ'
       $bar_message = '移動'
       $message = 'どこに進もうか'
-
     end
 
     # 描画
@@ -74,15 +82,16 @@ Window.load_resources do
       Window.draw(0, 0, Image[:bg])
       Window.draw(0, 0, Image[:map])
 
-      mapevents.each_with_index do |m, i|
+      $mapevents.each_with_index do |m, i|
         n = i
         n += 1 if i >= 9
-        Window.draw($MAP[n][:coo][:x] - 16,$MAP[n][:coo][:y] - 16, Image["icon#{m}"] )
+        Window.draw($MAP[n][:coo][:x] - 16, $MAP[n][:coo][:y] - 16, Image["icon#{m}"] )
       end
 
       Window.draw_circle_fill($player[:x], $player[:y], 10, [128, 0, 0])
       if $map_confirm
-        $message = '何かが起こりそうだ'
+        $message = check_event($map_now)
+        puts $map_now
         if Input.key_push?(K_SPACE)
           $map_confirm = false
         end

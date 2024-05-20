@@ -16,10 +16,11 @@ $MAPEVENT = [
 ]
 
 $MAPEVENT_DESC = [
-  { name: '戦闘', key: 'battle' }, # 1
-  { name: 'イベント', key: 'event' }, # 2
-  { name: 'アイテム', key: 'item' }, # 3
-  { name: '宿屋', key: 'inn' }, # 4
+  { name: 'スタート地点', key: 'none'},
+  { name: '戦闘', key: 'battle' },
+  { name: 'イベント', key: 'event' },
+  { name: 'アイテム', key: 'item' },
+  { name: '宿屋', key: 'inn' },
   { name: '赤ずきんの世界', key: 'story_akz' },
   { name: 'ジャックと豆の木の世界', key: 'story_jack' },
   { name: '長靴を履いた猫の世界', key: 'story_cat' },
