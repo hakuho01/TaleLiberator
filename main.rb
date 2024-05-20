@@ -18,11 +18,21 @@ Image.register(:turn_you, 'images/turn_you.png')
 Image.register(:turn_enemy, 'images/turn_enemy.png')
 Image.register(:turn_next_you, 'images/turn_next_you.png')
 Image.register(:turn_next_enemy, 'images/turn_next_enemy.png')
+Image.register(:icon1, 'images/icon_battle.png')
+Image.register(:icon2, 'images/icon_event.png')
+Image.register(:icon3, 'images/icon_treasure.png')
+Image.register(:icon4, 'images/icon_rest.png')
+Image.register(:icon5, 'images/icon_story.png')
+Image.register(:icon6, 'images/icon_story.png')
+Image.register(:icon7, 'images/icon_story.png')
+Image.register(:icon8, 'images/icon_story.png')
 
 $scene = :battle
 
-$player = { x: 98, y: 63 }
-$map_now = 0
+$player = { x: 0, y: 0 }
+$map_now = 9
+$player[:x] = $MAP[$map_now][:coo][:x]
+$player[:y] = $MAP[$map_now][:coo][:y]
 
 def move_player(direction)
   return unless $MAP[$map_now][direction]
@@ -65,7 +75,9 @@ Window.load_resources do
       Window.draw(0, 0, Image[:map])
 
       mapevents.each_with_index do |m, i|
-
+        n = i
+        n += 1 if i >= 9
+        Window.draw($MAP[n][:coo][:x] - 16,$MAP[n][:coo][:y] - 16, Image["icon#{m}"] )
       end
 
       Window.draw_circle_fill($player[:x], $player[:y], 10, [128, 0, 0])
