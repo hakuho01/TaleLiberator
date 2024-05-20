@@ -22,13 +22,12 @@ Image.register(:turn_next_enemy, 'images/turn_next_enemy.png')
 $scene = :battle
 
 $player = { x: 98, y: 63 }
-$map_now = :a
+$map_now = 0
 
 def move_player(direction)
-  return unless $MAP[$map_now].key(direction)
+  return unless $MAP[$map_now][direction]
 
-  next_position = $MAP[$map_now].key(direction)
-  $map_now = next_position
+  $map_now = $MAP[$map_now][direction]
   $player[:x] = $MAP[$map_now][:coo][:x]
   $player[:y] = $MAP[$map_now][:coo][:y]
   $map_confirm = true
@@ -45,6 +44,7 @@ $message = ''
 Window.load_resources do
   # ここの処理はinit関数にあとで切り出す
   battle = Battle.new(1)
+  mapevents = $MAPEVENT.shuffle
 
   Window.loop do
 
@@ -63,6 +63,10 @@ Window.load_resources do
     when :map
       Window.draw(0, 0, Image[:bg])
       Window.draw(0, 0, Image[:map])
+
+      mapevents.each_with_index do |m, i|
+
+      end
 
       Window.draw_circle_fill($player[:x], $player[:y], 10, [128, 0, 0])
       if $map_confirm
