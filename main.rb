@@ -3,11 +3,13 @@ include DXOpal
 
 # ファイル読み込み
 require_remote 'battle.rb'
+require_remote 'rest.rb'
 require_remote 'constants.rb'
 
 Image.register(:bg, 'images/bg.png')
 Image.register(:bg_battle, 'images/bg/battle.png')
 Image.register(:bg_message, 'images/bg/message.png')
+Image.register(:bg_rest, 'images/bg/rest.png')
 Image.register(:map, 'images/map.png')
 Image.register(:bar, 'images/bar.png')
 Image.register(:top_bar, 'images/top_bar.png')
@@ -27,7 +29,7 @@ Image.register(:icon6, 'images/icon_story.png')
 Image.register(:icon7, 'images/icon_story.png')
 Image.register(:icon8, 'images/icon_story.png')
 
-$scene = :battle
+$scene = :map
 
 $player = { x: 0, y: 0 }
 $map_now = 9
@@ -62,18 +64,57 @@ $message = ''
 
 Window.load_resources do
   # ここの処理はinit関数にあとで切り出す
-  battle = Battle.new(1)
   $mapevents = $MAPEVENT.shuffle
 
   Window.loop do
-
     case $scene
     when :battle
-      battle.execute_battle
+      $battle.execute_battle
+    when :event
+    when :item
+    when :rest
+      $rest.execute_rest
     when :map
       $top_bar_message = '進むタイルを選べ'
       $bar_message = '移動'
       $message = 'どこに進もうか'
+      if $map_confirm
+        $message = check_event($map_now)
+        if Input.key_push?(K_SPACE)
+          if $map_now == 9
+            m == ''
+          elsif $map_now > 9
+            m = $map_now - 1
+          elsif $map_now < 9
+            m = $map_now
+          end
+          case $mapevents[m]
+          when 0 # start
+          when 1 # battle
+            $scene = :battle
+            $battle = Battle.new(0)
+          when 2 # event
+            $scene = :event
+          when 3 # item
+            $scene = :item
+          when 4 # rest
+            $scene = :rest
+            $rest = Rest.new
+          when 5 # 赤ずきん
+          when 6 # ジャック
+          when 7 # 猫
+          when 8 # シンデレラ
+          end
+          $map_confirm = false
+        end
+      else
+        move_player('w') if Input.key_push?(K_W)
+        move_player('e') if Input.key_push?(K_E)
+        move_player('d') if Input.key_push?(K_D)
+        move_player('x') if Input.key_push?(K_X)
+        move_player('z') if Input.key_push?(K_Z)
+        move_player('a') if Input.key_push?(K_A)
+      end
     end
 
     # 描画
@@ -87,22 +128,8 @@ Window.load_resources do
         n += 1 if i >= 9
         Window.draw($MAP[n][:coo][:x] - 16, $MAP[n][:coo][:y] - 16, Image["icon#{m}"] )
       end
-
       Window.draw_circle_fill($player[:x], $player[:y], 10, [128, 0, 0])
-      if $map_confirm
-        $message = check_event($map_now)
-        puts $map_now
-        if Input.key_push?(K_SPACE)
-          $map_confirm = false
-        end
-      else
-        move_player('w') if Input.key_push?(K_W)
-        move_player('e') if Input.key_push?(K_E)
-        move_player('d') if Input.key_push?(K_D)
-        move_player('x') if Input.key_push?(K_X)
-        move_player('z') if Input.key_push?(K_Z)
-        move_player('a') if Input.key_push?(K_A)
-      end
+
     when :battle
       Window.draw(0, 0, Image[:bg_battle])
 
@@ -119,9 +146,12 @@ Window.load_resources do
 
       Window.draw(480, 100, Image[:enemy1])
       Window.draw_box_fill(600, 440, 800, 460, [0, 0, 0])
-      Window.draw_box_fill(602, 442, 602 + (196 * battle.enemy_hp / battle.enemy_max_hp).floor, 458, [0, 255, 0])
-      Window.draw_font(480, 442, "HP:#{battle.enemy_hp}/#{battle.enemy_max_hp}", $font14)
+      Window.draw_box_fill(602, 442, 602 + (196 * $battle.enemy_hp / $battle.enemy_max_hp).floor, 458, [0, 255, 0])
+      Window.draw_font(480, 442, "HP:#{$battle.enemy_hp}/#{$battle.enemy_max_hp}", $font14)
+    when :rest
+      Window.draw(0, 0, Image[:bg_rest])
     end
+
     # Bar
     Window.draw(340, 20, Image[:top_bar])
     Window.draw_font(640 - ($font20.get_width($top_bar_message) / 2), 34, $top_bar_message, $font20)
@@ -136,8 +166,8 @@ Window.load_resources do
     case $scene
     when :battle
       Window.draw_box_fill(Window.width - 210, 550, Window.width - 10, 570, [0, 0, 0])
-      Window.draw_box_fill(Window.width - 208, 552, Window.width - 208 + (196 * battle.player_hp / battle.player_max_hp).floor, 568, [0, 255, 0])
-      Window.draw_font(Window.width - 320, 550, "HP:#{battle.player_hp}/#{battle.player_max_hp}", $font14)
+      Window.draw_box_fill(Window.width - 208, 552, Window.width - 208 + (196 * $battle.player_hp / $battle.player_max_hp).floor, 568, [0, 255, 0])
+      Window.draw_font(Window.width - 320, 550, "HP:#{$battle.player_hp}/#{$battle.player_max_hp}", $font14)
     end
   end
 end
