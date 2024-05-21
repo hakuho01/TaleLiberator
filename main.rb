@@ -6,12 +6,39 @@ require_remote 'battle.rb'
 require_remote 'rest.rb'
 require_remote 'constants.rb'
 
-Image.register(:bg, 'images/bg.png')
+
+$MAP = [
+  { id: 'a', d: 1, z: 3, x: 4, coo: { x: 562, y: 164 } },
+  { id: 'b', a: 0, d: 2, z: 4, x: 5, coo: { x: 640, y: 164 } },
+  { id: 'c', a: 1, z: 5, x: 6, coo: { x: 718, y: 164 } },
+  { id: 'd', e: 0, d: 4, x: 8, z: 7, coo: { x: 523, y: 231 } },
+  { id: 'e', w: 0, e: 1, a: 3, d: 5, z: 8, x: 9, coo: { x: 601, y: 231 } },
+  { id: 'f', w: 1, e: 2, a: 4, d: 6, z: 9, x: 10, coo: { x: 679, y: 231 } },
+  { id: 'g', w: 2, a: 5, z: 10, x: 11, coo: { x: 757, y: 231 } },
+  { id: 'h', e: 3, d: 8, x: 12, coo: { x: 484, y: 298 } },
+  { id: 'i', w: 3, e: 4, a: 7, d: 9, z: 12, x: 13, coo: { x: 562, y: 298 } },
+  { id: 'j', w: 4, e: 5, a: 8, d: 10, z: 13, x: 14, coo: { x: 640, y: 298 } },
+  { id: 'k', w: 5, e: 6, a: 9, d: 11, z: 14, x: 15, coo: { x: 718, y: 298 } },
+  { id: 'l', w: 6, a: 10, z: 15, coo: { x: 796, y: 298 } },
+  { id: 'm', w: 7, e: 8, d: 13, x: 16, coo: { x: 523, y: 365 } },
+  { id: 'n', w: 8, e: 9, a: 12, d: 14, z: 16, x: 17, coo: { x: 601, y: 365 } },
+  { id: 'o', w: 9, e: 10, a: 13, d: 15, z: 17, x: 18, coo: { x: 679, y: 365 } },
+  { id: 'p', w: 10, e: 11, a: 14, z: 18, coo: { x: 757, y: 365 } },
+  { id: 'q', w: 12, e: 13, d: 17, coo: { x: 562, y: 432 } },
+  { id: 'r', w: 13, e: 14, a: 16, d: 18, coo: { x: 640, y: 432 } },
+  { id: 's', w: 14, e: 15, a: 17, coo: { x: 718, y: 432 } }
+]
+
+
+Image.register(:bg, 'images/bg/map.png')
 Image.register(:bg_battle, 'images/bg/battle.png')
 Image.register(:bg_message, 'images/bg/message.png')
 Image.register(:bg_rest, 'images/bg/rest.png')
 Image.register(:map, 'images/map.png')
+Image.register(:player_hexa, 'images/player_hexa.png')
 Image.register(:bar, 'images/bar.png')
+Image.register(:clock, 'images/clock.png')
+Image.register(:clock_hands, 'images/clock_hands.png')
 Image.register(:top_bar, 'images/top_bar.png')
 Image.register(:icon_frame, 'images/icon_frame.png')
 Image.register(:i_shirokishi, 'images/icon/shirokishi.png')
@@ -43,6 +70,7 @@ def move_player(direction)
   $player[:x] = $MAP[$map_now][:coo][:x]
   $player[:y] = $MAP[$map_now][:coo][:y]
   $map_confirm = true
+  $endclock += 1
 end
 
 def check_event(map)
@@ -65,6 +93,17 @@ $message = ''
 Window.load_resources do
   # ここの処理はinit関数にあとで切り出す
   $mapevents = $MAPEVENT.shuffle
+  $selects = []
+  $endclock = 0
+  $player_stats = {
+    max_hp: 100,
+    hp: 100,
+    atk: 180,
+    base_atk: 20,
+    def: 110,
+    base_def: 20,
+    sp: 35
+  }
 
   Window.loop do
     case $scene
@@ -75,6 +114,9 @@ Window.load_resources do
     when :rest
       $rest.execute_rest
     when :map
+      if $endclock == 24
+        # 終焉の時計が24になったときの処理
+      end
       $top_bar_message = '進むタイルを選べ'
       $bar_message = '移動'
       $message = 'どこに進もうか'
@@ -121,14 +163,14 @@ Window.load_resources do
     case $scene
     when :map
       Window.draw(0, 0, Image[:bg])
-      Window.draw(0, 0, Image[:map])
+      Window.draw(Window.width / 2 - 225, 72, Image[:map])
 
       $mapevents.each_with_index do |m, i|
         n = i
         n += 1 if i >= 9
-        Window.draw($MAP[n][:coo][:x] - 16, $MAP[n][:coo][:y] - 16, Image["icon#{m}"] )
+        Window.draw($MAP[n][:coo][:x] - 16, $MAP[n][:coo][:y] - 16, Image["icon#{m}"])
       end
-      Window.draw_circle_fill($player[:x], $player[:y], 10, [128, 0, 0])
+      Window.draw($player[:x] - 32, $player[:y] - 36, Image[:player_hexa])
 
     when :battle
       Window.draw(0, 0, Image[:bg_battle])
@@ -158,16 +200,24 @@ Window.load_resources do
     Window.draw(980, 20, Image[:bar])
     Window.draw_font(1130 - ($font24m.get_width($bar_message) / 2), 32, $bar_message, $font24m)
 
+    Window.draw(10, 10, Image[:clock])
+    Window.draw_rot(-20, -20, Image[:clock_hands], $endclock * 15, 100, 100)
+
     # Text
     Window.draw(0, 540, Image[:bg_message])
     Window.draw(10, 550, Image[:icon_frame])
     Window.draw(16, 556, Image[:i_shirokishi])
     Window.draw_font(180, 550, $message, $font20)
-    case $scene
-    when :battle
-      Window.draw_box_fill(Window.width - 210, 550, Window.width - 10, 570, [0, 0, 0])
-      Window.draw_box_fill(Window.width - 208, 552, Window.width - 208 + (196 * $battle.player_hp / $battle.player_max_hp).floor, 568, [0, 255, 0])
-      Window.draw_font(Window.width - 320, 550, "HP:#{$battle.player_hp}/#{$battle.player_max_hp}", $font14)
+
+    unless $selects.empty?
+      Window.draw_box_fill(Window.width - 260, 550, Window.width - 262, 710, [255,255,255])
+      $selects.each_with_index do |select, idx|
+        Window.draw_font(Window.width - 240, 550 + idx * 36, "#{idx + 1}. #{select}", $font20)
+      end
     end
+
+    Window.draw_box_fill(300, 688, 500, 708, [0, 0, 0])
+    Window.draw_box_fill(302, 690, 302 + (196 * $player_stats[:hp] / $player_stats[:max_hp]).floor, 706, [0, 255, 0])
+    Window.draw_font(180, 690, "HP:#{$player_stats[:hp]}/#{$player_stats[:max_hp]}", $font14)
   end
 end
