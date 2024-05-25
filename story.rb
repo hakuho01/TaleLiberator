@@ -14,9 +14,67 @@ class Story
   def execute_story
     case $story_id
     when 5
-      $scene = :map if Input.key_push?(K_SPACE)
+      $top_bar_message = '赤ずきんの世界'
+      case @steps
+      when 0
+        $message = '赤ずきん「きゃぁっ！」'
+        $speaker = 'redcap'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 1
+        $message = '「お嬢さん、大丈夫かい？」'
+        $speaker = 'shirokishi'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 2
+        $message = '赤ずきん「騎士さん……悪い狼が暴れ出して手に負えないの！」'
+        $speaker = 'redcap'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 3
+        $message = '赤ずきん「助けてくれないかしら？」'
+        if Input.key_push?(K_SPACE)
+          $speaker = 'shirokishi'
+          $battle_ex_message = '赤ずきんが仲間になった。紅天撃を身につけた'
+          $player_stats[:actions].push()
+          $scene = :battle
+          $battle = Battle.new(5)
+          if $map_now > 9
+            m = $map_now - 1
+          elsif $map_now < 9
+            m = $map_now
+          end
+          $mapevents[m] = 0
+        end
+      end
     when 6
-      $scene = :map if Input.key_push?(K_SPACE)
+      $top_bar_message = 'ジャックと豆の木の世界'
+      case @steps
+      when 0
+        $message = 'ジャック「や、やばいぜ〜！」'
+        $speaker = 'jack'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 1
+        $message = '「どうした、そこの青年？」'
+        $speaker = 'shirokishi'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 2
+        $message = 'ジャック「大きな豆の木を登っていたら、見ての通り恐ろしい巨人に追いかけられてるんだ！」'
+        $speaker = 'cinder'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 3
+        $message = 'シンデレラ「助けてくれ〜！」'
+        if Input.key_push?(K_SPACE)
+          $speaker = 'shirokishi'
+          $battle_ex_message = 'ジャックが仲間になった。豆料理を身につけた'
+          $player_stats[:actions].push()
+          $scene = :battle
+          $battle = Battle.new(6)
+          if $map_now > 9
+            m = $map_now - 1
+          elsif $map_now < 9
+            m = $map_now
+          end
+          $mapevents[m] = 0
+        end
+      end
     when 7
       $top_bar_message = '長靴を履いた猫の世界'
       case @steps
@@ -36,7 +94,8 @@ class Story
         $message = '長靴を履いた猫「どうか助太刀をお願いできないか？」'
         if Input.key_push?(K_SPACE)
           $speaker = 'shirokishi'
-          $battle_ex_message = '長靴を履いた猫が仲間になった'
+          $battle_ex_message = '長靴を履いた猫が仲間になった。ねこパンチを身につけた'
+          $player_stats[:actions].push()
           $scene = :battle
           $battle = Battle.new(7)
           if $map_now > 9
@@ -48,7 +107,36 @@ class Story
         end
       end
     when 8
-      $scene = :map if Input.key_push?(K_SPACE)
+      $top_bar_message = 'シンデレラの世界'
+      case @steps
+      when 0
+        $message = 'シンデレラ「お母様……いったい……」'
+        $speaker = 'cinder'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 1
+        $message = '「何が起こっている？」'
+        $speaker = 'shirokishi'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 2
+        $message = 'シンデレラ「継母がいきなりおかしくなって、舞踏会をめちゃくちゃに……」'
+        $speaker = 'cinder'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 3
+        $message = 'シンデレラ「お願い、一緒に戦って！」'
+        if Input.key_push?(K_SPACE)
+          $speaker = 'shirokishi'
+          $battle_ex_message = 'シンデレラが仲間になった。灰姫の祈祷を身につけた'
+          $player_stats[:actions].push()
+          $scene = :battle
+          $battle = Battle.new(8)
+          if $map_now > 9
+            m = $map_now - 1
+          elsif $map_now < 9
+            m = $map_now
+          end
+          $mapevents[m] = 0
+        end
+      end
     end
   end
 end
