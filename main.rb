@@ -3,7 +3,6 @@ include DXOpal
 
 # ファイル読み込み
 require_remote 'constants.rb'
-require_remote 'story.rb'
 
 $MAP = [
   { id: 'a', d: 1, z: 3, x: 4, coo: { x: 562, y: 164 } },
@@ -27,7 +26,7 @@ $MAP = [
   { id: 's', w: 14, e: 15, a: 17, coo: { x: 718, y: 432 } }
 ]
 
-$ACTION_NAME = ['', '攻撃', '防御', '集中', '警戒']
+$ACTION_NAME = ['', '攻撃', '防御', '集中', '警戒', '紅天撃', '豆料理', 'ねこパンチ', '灰姫の祈祷']
 $ENEMY_ACTION_NAME = ['', '攻撃', '防御', '怒り', '警戒', '毒牙', 'ブレス', '']
 $ITEMS = [
   { name: '白銀の剣', stats_name: '攻撃倍率', stats: 'atk', value: 20 },
@@ -40,6 +39,7 @@ Image.register(:bg, 'images/bg/map.png')
 Image.register(:bg_battle, 'images/bg/battle.png')
 Image.register(:bg_message, 'images/bg/message.png')
 Image.register(:bg_rest, 'images/bg/rest.png')
+Image.register(:bg_item, 'images/bg/item.png')
 Image.register(:bg_story5, 'images/bg/story5.png')
 Image.register(:bg_story6, 'images/bg/story6.png')
 Image.register(:bg_story7, 'images/bg/story7.png')
@@ -84,6 +84,7 @@ Image.register(:enemy13, 'images/enemy/enemy13.png')
 Image.register(:enemy14, 'images/enemy/enemy14.png')
 Image.register(:enemy15, 'images/enemy/enemy15.png')
 Image.register(:enemy16, 'images/enemy/enemy16.png')
+Image.register(:enemy17, 'images/enemy/enemy17.png')
 
 Image.register(:turn_you, 'images/turn_you.png')
 Image.register(:turn_enemy, 'images/turn_enemy.png')
@@ -119,6 +120,7 @@ Window.height = 720
 $font14 = Font.new(16, 'ヒラギノ角ゴ')
 $font20 = Font.new(20, 'ヒラギノ角ゴ')
 $font24m = Font.new(24, 'A-OTF UD黎ミン Pr6N L')
+$font32 = Font.new(32, 'Futura PT')
 
 def game_init
   $fade_flg = false
@@ -179,13 +181,13 @@ Window.load_resources do
           $message = check_event($map_now)
           if Input.key_push?(K_SPACE)
             if $map_now == 9
-              m = 0
+              m = -1
             elsif $map_now > 9
               m = $map_now - 1
             elsif $map_now < 9
               m = $map_now
             end
-            unless m.zero?
+            unless m == -1
               case $mapevents[m]
               when 0 # start
               when 1 # battle
@@ -204,11 +206,11 @@ Window.load_resources do
               when 5..8
                 $scene = :story
                 $story_id = $mapevents[m]
-                $story = Story.new($mapevents[m])
+                $story = Story.new
               end
             end
             $map_confirm = false
-            fade_in unless m.zero?
+            fade_in unless m.zero? || $mapevents[m].zero?
           end
         else
           move_player('w') if Input.key_push?(K_W)
@@ -240,6 +242,10 @@ Window.load_resources do
     when :battle
       Window.draw(0, 0, Image[:bg_battle])
       Window.draw(0, 0, Image[:enemy13]) if $endclock == 24
+      Window.draw(0, 0, Image[:bg_story5]) if $battle.enemy_id == 14
+      Window.draw(0, 0, Image[:bg_story6]) if $battle.enemy_id == 15
+      Window.draw(0, 0, Image[:bg_story7]) if $battle.enemy_id == 16
+      Window.draw(0, 0, Image[:bg_story8]) if $battle.enemy_id == 17
 
       if $turn == :player_turn
         Window.draw(1040, 100, Image[:turn_you])
@@ -253,12 +259,19 @@ Window.load_resources do
       end
 
       Window.draw(480, 100, Image["enemy#{$battle.enemy_id}"]) unless $endclock == 24
-      Window.draw_box_fill(600, 440, 800, 460, [0, 0, 0])
-      Window.draw_box_fill(602, 442, 602 + (196 * $battle.enemy_hp / $battle.enemy_max_hp).floor, 458, [0, 255, 0])
-      Window.draw_font(480, 442, "HP:#{$battle.enemy_hp}/#{$battle.enemy_max_hp}", $font14)
-      Window.draw_font(480, 462, "Next:#{$ENEMY_ACTION_NAME[$enemy_action]}", $font14)
+      Window.draw_box_fill(480, 432, 800, 496, [128, 0, 0, 0])
+      Window.draw_box_fill(590, 440, 790, 460, [0, 0, 0])
+      Window.draw_box_fill(592, 442, 592 + (196 * $battle.enemy_hp / $battle.enemy_max_hp).floor, 458, [0, 255, 0])
+      Window.draw_font(490, 442, "HP:#{$battle.enemy_hp}/#{$battle.enemy_max_hp}", $font14)
+      Window.draw_font(490, 468, "Next:#{$ENEMY_ACTION_NAME[$enemy_action]}", $font14)
+      Window.draw(722, 468, Image[:atk_up]) if $battle.enemy_tmp_atk.positive?
+      Window.draw(740, 468, Image[:def_up]) if $battle.enemy_tmp_def.positive?
+      Window.draw(758, 468, Image[:atk_down]) if $battle.enemy_tmp_def.negative?
+      Window.draw(774, 468, Image[:def_down]) if $battle.enemy_tmp_def.negative?
     when :rest
       Window.draw(0, 0, Image[:bg_rest])
+    when :item
+      Window.draw(0, 0, Image[:bg_item])
     when :event
       Window.draw(0, 0, Image["event#{$event_no}"])
     when :story
@@ -308,6 +321,11 @@ Window.load_resources do
     Window.draw_box_fill(Window.width - 210, 552, Window.width - 10, 572, [0, 0, 0])
     Window.draw_box_fill(Window.width - 208, 554, Window.width - 208 + (196 * $player_stats[:hp] / $player_stats[:max_hp]).floor, 570, [0, 255, 0])
     Window.draw_font(Window.width - 316, 556, "HP:#{$player_stats[:hp]}/#{$player_stats[:max_hp]}", $font14)
+
+    if $scene == :gameover # ゲームオーバー表示
+      Window.draw_box_fill(0, 0, Window.width, Window.height, [0 ,0 ,0])
+      Window.draw_font((Window.width - $font32.get_width('GAMEOVER')) / 2, Window.height / 2 - 16, 'GAMEOVER', $font32)
+    end
 
     if $fade_flg
       opacity = (255 / 45 * $fade_frames).floor
@@ -390,6 +408,7 @@ end
 class Item
   def initialize
     @steps = 0
+    $top_bar_message = '宝箱を見つけた'
     loop do
       @get_item_id = rand($ITEMS.count)
       break unless $get_items.include?(@get_item_id)
@@ -415,6 +434,135 @@ class Item
           m = $map_now
         end
         $mapevents[m] = 0
+      end
+    end
+  end
+end
+
+# Storyクラス
+class Story
+  def initialize
+    $bar_message = '物語の世界'
+    @steps = 0
+  end
+
+  def execute_story
+    case $story_id
+    when 5
+      $top_bar_message = '赤ずきんの世界'
+      case @steps
+      when 0
+        $message = '赤ずきん「きゃぁっ！」'
+        $speaker = 'redcap'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 1
+        $message = '「お嬢さん、大丈夫かい？」'
+        $speaker = 'shirokishi'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 2
+        $message = '赤ずきん「騎士さん……悪い狼が暴れ出して手に負えないの！」'
+        $speaker = 'redcap'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 3
+        $message = '赤ずきん「助けてくれないかしら？」'
+        if Input.key_push?(K_SPACE)
+          $speaker = 'shirokishi'
+          $scene = :battle
+          $battle = Battle.new(5)
+          if $map_now > 9
+            m = $map_now - 1
+          elsif $map_now < 9
+            m = $map_now
+          end
+          $mapevents[m] = 0
+        end
+      end
+    when 6
+      $top_bar_message = 'ジャックと豆の木の世界'
+      case @steps
+      when 0
+        $message = 'ジャック「や、やばいぜ〜！」'
+        $speaker = 'jack'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 1
+        $message = '「どうした、そこの青年？」'
+        $speaker = 'shirokishi'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 2
+        $message = 'ジャック「大きな豆の木を登っていたら、恐ろしい巨人に追いかけられてるんだ！」'
+        $speaker = 'jack'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 3
+        $message = 'ジャック「助けてくれ〜！」'
+        if Input.key_push?(K_SPACE)
+          $speaker = 'shirokishi'
+          $scene = :battle
+          $battle = Battle.new(6)
+          if $map_now > 9
+            m = $map_now - 1
+          elsif $map_now < 9
+            m = $map_now
+          end
+          $mapevents[m] = 0
+        end
+      end
+    when 7
+      $top_bar_message = '長靴を履いた猫の世界'
+      case @steps
+      when 0
+        $message = '長靴を履いた猫「そこの方！手を貸して欲しい！」'
+        $speaker = 'cat'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 1
+        $message = '「これは一体……？」'
+        $speaker = 'shirokishi'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 2
+        $message = '長靴を履いた猫「王が闇の力に操られてしまった！私一人では手に負えない」'
+        $speaker = 'cat'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 3
+        $message = '長靴を履いた猫「どうか助太刀をお願いできないか？」'
+        if Input.key_push?(K_SPACE)
+          $speaker = 'shirokishi'
+          $scene = :battle
+          $battle = Battle.new(7)
+          if $map_now > 9
+            m = $map_now - 1
+          elsif $map_now < 9
+            m = $map_now
+          end
+          $mapevents[m] = 0
+        end
+      end
+    when 8
+      $top_bar_message = 'シンデレラの世界'
+      case @steps
+      when 0
+        $message = 'シンデレラ「お母様……いったい……」'
+        $speaker = 'cinder'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 1
+        $message = '「何が起こっている？」'
+        $speaker = 'shirokishi'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 2
+        $message = 'シンデレラ「継母がいきなりおかしくなって、舞踏会をめちゃくちゃに……」'
+        $speaker = 'cinder'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 3
+        $message = 'シンデレラ「お願い、一緒に戦って！」'
+        if Input.key_push?(K_SPACE)
+          $speaker = 'shirokishi'
+          $scene = :battle
+          $battle = Battle.new(8)
+          if $map_now > 9
+            m = $map_now - 1
+          elsif $map_now < 9
+            m = $map_now
+          end
+          $mapevents[m] = 0
+        end
       end
     end
   end
@@ -470,7 +618,7 @@ end
 
 # Battleクラス
 class Battle
-  attr_accessor :enemy_hp, :enemy_max_hp, :enemy_id, :player_tmp_atk, :player_tmp_def
+  attr_accessor :enemy_hp, :enemy_max_hp, :enemy_id, :player_tmp_atk, :player_tmp_def, :enemy_tmp_atk, :enemy_tmp_def
 
   def initialize(rank)
     $bar_message = '戦闘'
@@ -501,6 +649,7 @@ class Battle
       @player_sp = $player_stats[:sp]
       $next_turn = @enemy_sp >= @player_sp ? :player_select : :enemy_select
       @player_actions = $player_stats[:actions].dup
+      puts @player_actions
       @selected_player_actions = []
       3.times do
         act = @player_actions.sample
@@ -566,14 +715,35 @@ class Battle
         @battle_phase = :lose if $player_stats[:hp].zero?
       end
     when :win
+      case @enemy_stats[:id]
+      when 14
+        $battle_ex_message = '赤ずきんが仲間になった。紅天撃を身につけた'
+      when 15
+        $battle_ex_message = 'ジャックが仲間になった。豆料理を身につけた'
+      when 16
+        $battle_ex_message = '長靴を履いた猫が仲間になった。ねこパンチを身につけた'
+      when 17
+        $battle_ex_message = 'シンデレラが仲間になった。灰姫の祈祷を身につけた'
+      end
       $message = "勝利した。#{$battle_ex_message}"
       $selects = []
       if Input.key_push?(K_SPACE)
+        case @enemy_stats[:id]
+        when 14
+          $player_stats[:actions].push(5)
+        when 15
+          $player_stats[:actions].push(6)
+        when 16
+          $player_stats[:actions].push(7)
+        when 17
+          $player_stats[:actions].push(8)
+        end
         $scene = :map
         $battle_ex_message = ''
       end
     when :lose
       $message = '敗北した'
+      $selects = []
       $scene = :gameover if Input.key_push?(K_SPACE)
     end
 
@@ -593,7 +763,7 @@ class Battle
       @enemy_hp = 0 if @enemy_hp.negative?
       $message = "攻撃！#{@give_dmg}ダメージを与えた"
     when 2 # 防御
-      @player_tmp_def = 10
+      @player_tmp_def = 50
       $message = '防御の姿勢に入った'
     when 3 # 集中
       @player_tmp_atk += 10
@@ -603,7 +773,7 @@ class Battle
       @give_dmg = 0 if @give_dmg.negative?
       @enemy_hp -= @give_dmg
       @enemy_hp = 0 if @enemy_hp.negative?
-      @player_tmp_def = 5
+      @player_tmp_def = 30
       $message = "警戒しながら攻撃！#{@give_dmg}ダメージを与えた"
     when 5 # 紅天撃 防御上昇無視
       @give_dmg = (($player_stats[:base_atk] + 30) * ($player_stats[:atk] + @player_tmp_atk) / @enemy_stats[:def] - @enemy_stats[:base_def]).floor
