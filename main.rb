@@ -27,7 +27,7 @@ $MAP = [
 ]
 
 $ACTION_NAME = ['', '攻撃', '防御', '集中', '警戒', '紅天撃', '豆料理', 'ねこパンチ', '灰姫の祈祷', '攻撃＋', '防御＋', '集中＋', '警戒＋']
-$ENEMY_ACTION_NAME = ['', '攻撃', '防御', '怒り', '警戒', '毒牙', 'ブレス', '呪い', '激昂', '攻撃＋', '防御＋', '警戒＋']
+$ENEMY_ACTION_NAME = ['', '攻撃', '防御', '怒り', '警戒', '毒牙', 'ブレス', '呪い', '激昂', '攻撃＋', '防御＋', '警戒＋', '威圧', '呪詛', '連撃掌', '遠吠え']
 $ITEMS = [
   { name: '白銀の剣', stats_name: '攻撃力', stats: 'base_atk', value: 10 },
   { name: '赤銅の槍', stats_name: '攻撃力', stats: 'base_atk', value: 5 },
@@ -1047,7 +1047,7 @@ class Battle
       @enemy_tmp_def = 20
       $message = "#{@enemy_stats[:name]}の警戒行動で#{@take_dmg}ダメージを受けた"
     when 12 # 威圧
-      $player_tmp_def -= 50
+      @player_tmp_def -= 50
       @take_dmg = ((@enemy_stats[:base_atk] + 20) * (@enemy_stats[:atk] + @enemy_tmp_atk) / ($player_stats[:def] + @player_tmp_def) - $player_stats[:base_def]).floor
       @take_dmg = 0 if @take_dmg.negative?
       $player_stats[:hp] = $player_stats[:hp] - @take_dmg
