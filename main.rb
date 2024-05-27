@@ -29,10 +29,11 @@ $MAP = [
 $ACTION_NAME = ['', '攻撃', '防御', '集中', '警戒', '紅天撃', '豆料理', 'ねこパンチ', '灰姫の祈祷']
 $ENEMY_ACTION_NAME = ['', '攻撃', '防御', '怒り', '警戒', '毒牙', 'ブレス', '']
 $ITEMS = [
-  { name: '白銀の剣', stats_name: '攻撃倍率', stats: 'atk', value: 20 },
-  { name: '赤銅の槍', stats_name: '基礎攻撃力', stats: 'base_atk', value: 15 },
-  { name: '黒鉄の鎧', stats_name: '防御倍率', stats: 'def', value: 20 },
-  { name: '黄金の兜', stats_name: '基礎防御力', stats: 'base_def', value: 15 }
+  { name: '白銀の剣', stats_name: '攻撃力', stats: 'base_atk', value: 10 },
+  { name: '赤銅の槍', stats_name: '攻撃力', stats: 'base_atk', value: 5 },
+  { name: '青銅の斧', stats_name: '攻撃力', stats: 'base_atk', value: 7 },
+  { name: '黒鉄の鎧', stats_name: '防御力', stats: 'base_def', value: 6 },
+  { name: '黄金の兜', stats_name: '防御力', stats: 'base_def', value: 10 }
 ]
 
 Image.register(:bg, 'images/bg/map.png')
@@ -44,6 +45,9 @@ Image.register(:bg_story5, 'images/bg/story5.png')
 Image.register(:bg_story6, 'images/bg/story6.png')
 Image.register(:bg_story7, 'images/bg/story7.png')
 Image.register(:bg_story8, 'images/bg/story8.png')
+Image.register(:bg_event1, 'images/bg/event1.png')
+Image.register(:bg_event2, 'images/bg/event2.png')
+Image.register(:bg_event3, 'images/bg/event3.png')
 
 Image.register(:map, 'images/map.png')
 Image.register(:player_hexa, 'images/player_hexa.png')
@@ -125,7 +129,7 @@ $font32 = Font.new(32, 'Futura PT')
 def game_init
   $fade_flg = false
   $mapevents = $MAPEVENT.shuffle
-  $scene = :map
+  $scene = :start
   $selects = []
   $endclock = 0
   $speaker = 'shirokishi'
@@ -195,7 +199,7 @@ Window.load_resources do
                 $scene = :battle
               when 2 # event
                 $scene = :event
-                $event_no += 1
+                $event_no = rand(1..5)
                 $event = Event.new
               when 3 # item
                 $scene = :item
@@ -220,6 +224,11 @@ Window.load_resources do
           move_player('z') if Input.key_push?(K_Z)
           move_player('a') if Input.key_push?(K_A)
         end
+      end
+    when :start
+      if Input.key_push?(K_SPACE)
+        $scene = :map
+        fade_in
       end
     when :gameover
       game_init if Input.key_push?(K_SPACE)
@@ -249,7 +258,7 @@ Window.load_resources do
 
       if $turn == :player_turn
         Window.draw(1040, 100, Image[:turn_you])
-      else
+      elsif $turn == :enemy_turn
         Window.draw(1040, 100, Image[:turn_enemy])
       end
       if $next_turn == :player_select
@@ -273,7 +282,7 @@ Window.load_resources do
     when :item
       Window.draw(0, 0, Image[:bg_item])
     when :event
-      Window.draw(0, 0, Image["event#{$event_no}"])
+      Window.draw(0, 0, Image["bg_event#{$event_no}"]) if $event_no == (1..3)
     when :story
       Window.draw(0, 0, Image["bg_story#{$story_id}"])
     end
@@ -312,19 +321,22 @@ Window.load_resources do
       Window.draw(Window.width - 280, 578, Image[:atk_down]) if $battle.player_tmp_def.negative?
       Window.draw(Window.width - 262, 578, Image[:def_down]) if $battle.player_tmp_def.negative?
     end
-    Window.draw_font(Window.width - 316, 600, "攻撃倍率　：#{$player_stats[:atk]}", $font14)
-    Window.draw_font(Window.width - 156, 600, "基礎攻撃力：#{$player_stats[:base_atk]}", $font14)
-    Window.draw_font(Window.width - 316, 626, "防御倍率　：#{$player_stats[:def]}", $font14)
-    Window.draw_font(Window.width - 156, 626, "基礎防御力：#{$player_stats[:base_def]}", $font14)
-    Window.draw_font(Window.width - 316, 652, "敏捷性　　：#{100 - $player_stats[:sp]}", $font14)
-    Window.draw_font(Window.width - 156, 652, "経験値　　：#{$player_stats[:exp]}", $font14)
+    Window.draw_font(Window.width - 316, 600, "攻撃力：#{$player_stats[:base_atk]}", $font14)
+    Window.draw_font(Window.width - 156, 600, "防御力：#{$player_stats[:base_def]}", $font14)
+    Window.draw_font(Window.width - 316, 626, "敏捷性：#{100 - $player_stats[:sp]}", $font14)
+    Window.draw_font(Window.width - 156, 626, "経験値：#{$player_stats[:exp]}", $font14)
     Window.draw_box_fill(Window.width - 210, 552, Window.width - 10, 572, [0, 0, 0])
     Window.draw_box_fill(Window.width - 208, 554, Window.width - 208 + (196 * $player_stats[:hp] / $player_stats[:max_hp]).floor, 570, [0, 255, 0])
     Window.draw_font(Window.width - 316, 556, "HP:#{$player_stats[:hp]}/#{$player_stats[:max_hp]}", $font14)
 
     if $scene == :gameover # ゲームオーバー表示
-      Window.draw_box_fill(0, 0, Window.width, Window.height, [0 ,0 ,0])
+      Window.draw_box_fill(0, 0, Window.width, Window.height, [0, 0, 0])
       Window.draw_font((Window.width - $font32.get_width('GAMEOVER')) / 2, Window.height / 2 - 16, 'GAMEOVER', $font32)
+    end
+
+    if $scene == :start # タイトル画面
+      Window.draw_box_fill(0, 0, Window.width, Window.height, [0, 0, 0])
+      Window.draw_font((Window.width - $font32.get_width('PUSH SPACE KEY')) / 2, Window.height / 2 - 16, 'PUSH SPACE KEY', $font32)
     end
 
     if $fade_flg
@@ -371,28 +383,20 @@ class Rest
       $scene = :map if Input.key_push?(K_SPACE)
     when 2
       $message = '経験値をステータスに変換する'
-      $selects = ['攻撃倍率', '基礎攻撃力', '防御倍率', '基礎防御力', '敏捷性', '終了する']
+      $selects = ['攻撃力', '防御力', '敏捷性', '終了する']
       if Input.key_push?(K_1) && $player_stats[:exp].positive?
         $player_stats[:exp] -= 1
-        $player_stats[:atk] += 1
-        $message2 = '攻撃倍率が上がった'
+        $player_stats[:base_atk] += 1
+        $message2 = '攻撃力が上がった'
       elsif Input.key_push?(K_2) && $player_stats[:exp].positive?
         $player_stats[:exp] -= 1
-        $player_stats[:base_atk] += 1
-        $message2 = '基礎攻撃力が上がった'
-      elsif Input.key_push?(K_3) && $player_stats[:exp].positive?
-        $player_stats[:exp] -= 1
-        $player_stats[:def] += 1
-        $message2 = '防御倍率が上がった'
-      elsif Input.key_push?(K_4) && $player_stats[:exp].positive?
-        $player_stats[:exp] -= 1
         $player_stats[:base_def] += 1
-        $message2 = '基礎防御力が上がった'
-      elsif Input.key_push?(K_5) && $player_stats[:exp].positive?
+        $message2 = '防御力が上がった'
+      elsif Input.key_push?(K_3) && $player_stats[:exp].positive?
         $player_stats[:exp] -= 1
         $player_stats[:sp] -= 1
         $message2 = '敏捷性が上がった'
-      elsif Input.key_push?(K_6)
+      elsif Input.key_push?(K_4)
         $scene = :map
         $selects = []
         $message2 = ''
@@ -572,23 +576,83 @@ end
 class Event
   def initialize
     @steps = 0
+    $bar_message = 'イベント'
   end
 
   def execute_event
     case $event_no
     when 1
+      $top_bar_message = 'ブレーメンの音楽隊の世界'
       case @steps
       when 0
-        $message = 'event1'
-        if Input.key_push?(K_SPACE)
-          @steps += 1
-        end
+        $message = '動物が集まっている'
+        @steps += 1 if Input.key_push?(K_SPACE)
       when 1
+        $message = 'ロバ「俺がこの音楽隊のリーダーにふさわしいと思う」'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 2
+        $message = '鶏「いやいや、ここは自分がリーダーをやるべきだ」'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 3
+        $message = '犬「何を言っているんだ？自分だろう」'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 4
+        $message = '猫「誰でもいいから好きにしてくれ……」'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 5
+        $message = 'ロバ「そこの騎士の人！誰が俺たちのリーダーにふさわしいか、決めてくれないか？」'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 6
+        $message = '誰がリーダーにふさわしいと思う？'
+        $selects = ['ロバ', '鶏', '犬', '猫']
+        if Input.key_push?(K_1)
+          $player_stats[:base_atk] += ($player_stats[:base_atk] * 0.1).floor
+          $selects = []
+          @steps += 1
+        elsif Input.key_push?(K_2)
+          $player_stats[:base_def] += ($player_stats[:base_def] * 0.1).floor
+          $selects = []
+          @steps += 2
+        elsif Input.key_push?(K_3)
+          $player_stats[:sp] -= ($player_stats[:sp] * 0.1).floor
+          $selects = []
+          @steps += 3
+        elsif Input.key_push?(K_4)
+          $player_stats[:exp] += 50
+          $selects = []
+          @steps += 4
+        end
+      when 7
+        $message = 'ロバ「見る目があるじゃないか」'
+        $message2 = '攻撃力が上がった'
         if Input.key_push?(K_SPACE)
+          $message2 = ''
+          $scene = :map
+        end
+      when 8
+        $message = '鶏「当然ね」'
+        $message2 = '防御力が上がった'
+        if Input.key_push?(K_SPACE)
+          $message2 = ''
+          $scene = :map
+        end
+      when 9
+        $message = '犬「どうもありがとう」'
+        $message2 = '敏捷性が上がった'
+        if Input.key_push?(K_SPACE)
+          $message2 = ''
+          $scene = :map
+        end
+      when 10
+        $message = '猫「俺じゃないと思うんだけどな〜……」'
+        $message2 = '経験値を得た'
+        if Input.key_push?(K_SPACE)
+          $message2 = ''
           $scene = :map
         end
       end
     when 2
+      $top_bar_message = '白雪姫の世界'
       case @steps
       when 0
         $message = 'event2'
@@ -601,17 +665,37 @@ class Event
         end
       end
     when 3
+      $top_bar_message = 'ヘンゼルとグレーテルの世界'
       case @steps
       when 0
-        $message = 'event3'
-        if Input.key_push?(K_SPACE)
-          @steps += 1
-        end
+        $message = 'お菓子の家がある'
+        @steps += 1 if Input.key_push?(K_SPACE)
       when 1
-        if Input.key_push?(K_SPACE)
-          $scene = :map
+        $message = '誰もいないようだ。どうする？'
+        $selects = ['お腹いっぱい食べる', '少しだけ食べる']
+        if Input.key_push?(K_1)
+          $player_stats[:hp] = $player_stats[:max_hp]
+          $selects = []
+          @steps += 1
+        elsif Input.key_push?(K_2)
+          $player_stats[:hp] += ($player_stats[:max_hp] * 0.2).floor
+          $player_stats[:max_hp] += ($player_stats[:max_hp] * 0.2).floor
+          $selects = []
+          @steps += 2
         end
+      when 2
+        $message = '体力が全回復した'
+        $scene = :map if Input.key_push?(K_SPACE)
+      when 3
+        $message = '体力の最大値が上がった'
+        $scene = :map if Input.key_push?(K_SPACE)
       end
+    when 4
+      $scene = :battle
+      $battle = Battle.new(($endclock / 6).floor)
+    when 5
+      $scene = :rest
+      $rest = Rest.new
     end
   end
 end
@@ -649,7 +733,6 @@ class Battle
       @player_sp = $player_stats[:sp]
       $next_turn = @enemy_sp >= @player_sp ? :player_select : :enemy_select
       @player_actions = $player_stats[:actions].dup
-      puts @player_actions
       @selected_player_actions = []
       3.times do
         act = @player_actions.sample
@@ -747,9 +830,9 @@ class Battle
       $scene = :gameover if Input.key_push?(K_SPACE)
     end
 
-    if (@battle_phase == :player_select) || (@battle_phase == :player_action) || (@battle_phase != :win) || (@battle_phase != :lose)
+    if (@battle_phase == :player_select) || (@battle_phase == :player_action)
       $turn = :player_turn
-    else
+    elsif (@battle_phase == :enemy_select) || (@battle_phase == :enemy_action)
       $turn = :enemy_turn
     end
   end
