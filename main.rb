@@ -36,6 +36,8 @@ $ITEMS = [
   { name: '黄金の兜', stats_name: '防御力', stats: 'base_def', value: 10 }
 ]
 
+Image.register(:logo, 'images/logo.png')
+
 Image.register(:bg, 'images/bg/map.png')
 Image.register(:bg_battle, 'images/bg/battle.png')
 Image.register(:bg_message, 'images/bg/message.png')
@@ -121,10 +123,11 @@ end
 Window.width = 1280
 Window.height = 720
 
-$font14 = Font.new(16, 'ヒラギノ角ゴ')
+$font16 = Font.new(16, 'ヒラギノ角ゴ')
 $font20 = Font.new(20, 'ヒラギノ角ゴ')
 $font24m = Font.new(24, 'A-OTF UD黎ミン Pr6N L')
 $font32 = Font.new(32, 'Futura PT')
+$font64 = Font.new(64, 'Futura PT')
 
 def game_init
   $fade_flg = false
@@ -271,8 +274,8 @@ Window.load_resources do
       Window.draw_box_fill(480, 432, 800, 496, [128, 0, 0, 0])
       Window.draw_box_fill(590, 440, 790, 460, [0, 0, 0])
       Window.draw_box_fill(592, 442, 592 + (196 * $battle.enemy_hp / $battle.enemy_max_hp).floor, 458, [0, 255, 0])
-      Window.draw_font(490, 442, "HP:#{$battle.enemy_hp}/#{$battle.enemy_max_hp}", $font14)
-      Window.draw_font(490, 468, "Next:#{$ENEMY_ACTION_NAME[$enemy_action]}", $font14)
+      Window.draw_font(490, 442, "HP:#{$battle.enemy_hp}/#{$battle.enemy_max_hp}", $font16)
+      Window.draw_font(490, 468, "Next:#{$ENEMY_ACTION_NAME[$enemy_action]}", $font16)
       Window.draw(722, 468, Image[:atk_up]) if $battle.enemy_tmp_atk.positive?
       Window.draw(740, 468, Image[:def_up]) if $battle.enemy_tmp_def.positive?
       Window.draw(758, 468, Image[:atk_down]) if $battle.enemy_tmp_def.negative?
@@ -282,7 +285,7 @@ Window.load_resources do
     when :item
       Window.draw(0, 0, Image[:bg_item])
     when :event
-      Window.draw(0, 0, Image["bg_event#{$event_no}"]) if $event_no == (1..3)
+      Window.draw(0, 0, Image["bg_event#{$event_no}"]) if (1..3) === $event_no
     when :story
       Window.draw(0, 0, Image["bg_story#{$story_id}"])
     end
@@ -321,30 +324,32 @@ Window.load_resources do
       Window.draw(Window.width - 280, 578, Image[:atk_down]) if $battle.player_tmp_def.negative?
       Window.draw(Window.width - 262, 578, Image[:def_down]) if $battle.player_tmp_def.negative?
     end
-    Window.draw_font(Window.width - 316, 600, "攻撃力：#{$player_stats[:base_atk]}", $font14)
-    Window.draw_font(Window.width - 156, 600, "防御力：#{$player_stats[:base_def]}", $font14)
-    Window.draw_font(Window.width - 316, 626, "敏捷性：#{100 - $player_stats[:sp]}", $font14)
-    Window.draw_font(Window.width - 156, 626, "経験値：#{$player_stats[:exp]}", $font14)
+    Window.draw_font(Window.width - 316, 600, "攻撃力：#{$player_stats[:base_atk]}", $font16)
+    Window.draw_font(Window.width - 156, 600, "防御力：#{$player_stats[:base_def]}", $font16)
+    Window.draw_font(Window.width - 316, 626, "敏捷性：#{100 - $player_stats[:sp]}", $font16)
+    Window.draw_font(Window.width - 156, 626, "経験値：#{$player_stats[:exp]}", $font16)
     Window.draw_box_fill(Window.width - 210, 552, Window.width - 10, 572, [0, 0, 0])
     Window.draw_box_fill(Window.width - 208, 554, Window.width - 208 + (196 * $player_stats[:hp] / $player_stats[:max_hp]).floor, 570, [0, 255, 0])
-    Window.draw_font(Window.width - 316, 556, "HP:#{$player_stats[:hp]}/#{$player_stats[:max_hp]}", $font14)
+    Window.draw_font(Window.width - 316, 556, "HP:#{$player_stats[:hp]}/#{$player_stats[:max_hp]}", $font16)
 
     if $scene == :gameover # ゲームオーバー表示
       Window.draw_box_fill(0, 0, Window.width, Window.height, [0, 0, 0])
-      Window.draw_font((Window.width - $font32.get_width('GAMEOVER')) / 2, Window.height / 2 - 16, 'GAMEOVER', $font32)
+      Window.draw_font((Window.width - $font64.get_width('GAMEOVER')) / 2, Window.height / 2 - 16, 'GAMEOVER', $font64)
+      Window.draw_font((Window.width - $font32.get_width('PUSH SPACE KEY TO RESTART')) / 2, Window.height / 2 + 60, 'PUSH SPACE KEY TO RESTART', $font32)
     end
 
     if $scene == :start # タイトル画面
-      Window.draw_box_fill(0, 0, Window.width, Window.height, [0, 0, 0])
-      Window.draw_font((Window.width - $font32.get_width('PUSH SPACE KEY')) / 2, Window.height / 2 - 16, 'PUSH SPACE KEY', $font32)
+      Window.draw_box_fill(0, 0, Window.width, Window.height, [255, 255, 255])
+      Window.draw(Window.width / 2 - 458, 200, Image[:logo])
+      Window.draw_font((Window.width - $font32.get_width('PUSH SPACE KEY')) / 2, Window.height / 2 + 80, 'PUSH SPACE KEY', $font32, color: [0, 0, 0])
     end
 
-    if $fade_flg
-      opacity = (255 / 45 * $fade_frames).floor
-      Window.draw_box_fill(0, 0, Window.width, Window.height, [opacity, 0, 0, 0])
-      $fade_frames -= 1
-      $fade_flg = false if $fade_frames == 0
-    end
+    next unless $fade_flg # フェード処理
+
+    opacity = (255 / 45 * $fade_frames).floor
+    Window.draw_box_fill(0, 0, Window.width, Window.height, [opacity, 0, 0, 0])
+    $fade_frames -= 1
+    $fade_flg = false if $fade_frames == 0
   end
 end
 
@@ -655,13 +660,24 @@ class Event
       $top_bar_message = '白雪姫の世界'
       case @steps
       when 0
-        $message = 'event2'
+        $message = '小人「わしたちは7人の小人」'
+        @steps += 1 if Input.key_push?(K_SPACE)
+      when 1
+        $message = '小人「よかったら休んでいきなさい」'
         if Input.key_push?(K_SPACE)
           @steps += 1
+          $player_stats[:hp] += ($player_stats[:max_hp] * 0.2).floor
+          $player_stats[:hp] = $player_stats[:max_hp] if $player_stats[:hp] > $player_stats[:max_hp]
+          $player_stats[:base_atk] += 5
+          $player_stats[:base_def] += 5
+          $player_stats[:sp] += 5
         end
-      when 1
+      when 2
+        $message = '休憩して体力を回復した'
+        $message2 = '装備を整備してもらってステータスが上昇した'
         if Input.key_push?(K_SPACE)
           $scene = :map
+          $message2 = ''
         end
       end
     when 3

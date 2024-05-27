@@ -24,3 +24,9 @@ Metrics/BlockLength:
 
 Metrics/ClassLength:
   Enabled: false
+
+Style/BlockNesting:
+  Enabled: false
+
+Style/WordArray:
+  Enabled: false

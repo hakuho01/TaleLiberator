@@ -29,19 +29,19 @@ $ENEMIES = [
   ],
   # Rank 6 (赤ずきんボス)
   [
-    { id: 14, name: '邪悪な狼', hp: 20, atk: 100, base_atk: 30, def: 100, base_def: 10, sp: 20, exp: 5, actions: [1, 2, 3] },
+    { id: 14, name: '邪悪な狼', hp: 120, atk: 100, base_atk: 35, def: 100, base_def: 25, sp: 80, exp: 5, actions: [1, 2, 3] },
   ],
   # Rank 7 (ジャックと豆の木ボス)
   [
-    { id: 15, name: '破壊の巨人', hp: 20, atk: 100, base_atk: 30, def: 100, base_def: 10, sp: 100, exp: 5, actions: [1, 2, 3] },
+    { id: 15, name: '破壊の巨人', hp: 150, atk: 100, base_atk: 40, def: 100, base_def: 20, sp: 100, exp: 5, actions: [1, 2, 3] },
   ],
   # Rank 8 (長靴を履いた猫ボス)
   [
-    { id: 16, name: '堕ちた国王', hp: 20, atk: 100, base_atk: 30, def: 100, base_def: 10, sp: 50, exp: 5, actions: [1, 2, 3] },
+    { id: 16, name: '堕ちた国王', hp: 100, atk: 100, base_atk: 25, def: 100, base_def: 35, sp: 90, exp: 5, actions: [1, 2, 3] },
   ],
   # Rank 9 (シンデレラボス)
   [
-    { id: 17, name: '恐怖の継母', hp: 20, atk: 100, base_atk: 30, def: 100, base_def: 10, sp: 60, exp: 5, actions: [1, 2, 3] },
+    { id: 17, name: '恐怖の継母', hp: 80, atk: 100, base_atk: 30, def: 100, base_def: 20, sp: 60, exp: 5, actions: [1, 2, 3] },
   ],
 ]
 

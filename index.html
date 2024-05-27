@@ -2,21 +2,25 @@
 <html>
   <head>
     <meta charset= "utf-8" />
-    <title>FableLiberator</title>
+    <title>TaleLiberator</title>
     <script type="text/javascript" src="dxopal.min.js"></script>
     <script type="text/ruby">
       DXOpal.dump_error{ require_remote "main.rb?#{Time.now}" }
     </script>
   </head>
 
-  <body>
-    <canvas id="dxopal-canvas"></canvas>
+  <body style="background: #efefef;">
+    <div style="text-align:center; margin-top: 60px;">
+      <canvas id="dxopal-canvas" style="border: 4px solid #ccc;"></canvas>
+    </div>
     <div id="dxopal-errors"></div>
-    <h2>操作方法</h2>
-    <ul>
-      <li>スペースキー：進む</li>
-      <li>数字キー：選択肢の選択</li>
-      <li>W/E/A/D/Z/X：マップでの該当方向への移動</li>
-    </ul>
+    <div style="width: 1280px; margin:0 auto;">
+      <h2>操作方法</h2>
+      <ul>
+        <li>スペースキー：進む</li>
+        <li>数字キー：選択肢の選択</li>
+        <li>W/E/A/D/Z/X：マップでの該当方向への移動</li>
+      </ul>
+    </div>
   </body>
 </html>
