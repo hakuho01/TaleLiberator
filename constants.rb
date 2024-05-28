@@ -13,19 +13,19 @@ $ENEMIES = [
   ],
   # Rank 3
   [
-    { id: 7, name: 'ハイドラ', hp: 100, atk: 100, base_atk: 20, def: 100, base_def: 18, sp: 72, exp: 20, actions: [9, 11, 5] },
-    { id: 8, name: 'ミノタウロス', hp: 140, atk: 100, base_atk: 30, def: 100, base_def: 25, sp: 80, exp: 23, actions: [9, 10, 11] },
-    { id: 9, name: 'ワイバーン', hp: 120, atk: 100, base_atk: 25, def: 100, base_def: 25, sp: 65, exp: 25, actions: [9, 10, 11, 6] },
+    { id: 7, name: 'ハイドラ', hp: 120, atk: 100, base_atk: 25, def: 100, base_def: 18, sp: 72, exp: 20, actions: [9, 11, 5] },
+    { id: 8, name: 'ミノタウロス', hp: 160, atk: 100, base_atk: 33, def: 100, base_def: 25, sp: 80, exp: 17, actions: [8, 9, 10, 11] },
+    { id: 9, name: 'ワイバーン', hp: 140, atk: 100, base_atk: 28, def: 100, base_def: 25, sp: 65, exp: 19, actions: [9, 10, 11, 6] },
   ],
   # Rank 4
   [
-    { id: 10, name: 'ドラゴン', hp: 180, atk: 100, base_atk: 35, def: 100, base_def: 35, sp: 60, exp: 30, actions: [9, 9, 11, 6, 6] },
-    { id: 11, name: 'デーモン', hp: 150, atk: 100, base_atk: 40, def: 100, base_def: 28, sp: 55, exp: 34, actions: [9, 7, 10, 11] },
-    { id: 12, name: 'キマイラ', hp: 140, atk: 100, base_atk: 30, def: 100, base_def: 30, sp: 70, exp: 38, actions: [9, 5, 6, 10 ,11] },
+    { id: 10, name: 'ドラゴン', hp: 210, atk: 100, base_atk: 40, def: 100, base_def: 35, sp: 60, exp: 21, actions: [8, 9, 9, 11, 6, 6] },
+    { id: 11, name: 'デーモン', hp: 180, atk: 100, base_atk: 45, def: 100, base_def: 28, sp: 55, exp: 23, actions: [9, 7, 10, 11] },
+    { id: 12, name: 'キマイラ', hp: 170, atk: 100, base_atk: 35, def: 100, base_def: 35, sp: 70, exp: 24, actions: [9, 5, 6, 10, 11] },
   ],
   # Rank 5 (ストーリーテラー)
   [
-    { id: 13, name: 'ストーリーテラー', hp: 250, atk: 150, base_atk: 50, def: 150, base_def: 50, sp: 40, exp: 5, actions: [1, 2, 3] },
+    { id: 13, name: 'ストーリーテラー', hp: 500, atk: 150, base_atk: 55, def: 150, base_def: 50, sp: 40, exp: 0, actions: [12, 14, 16, 17, 18, 19, 20] },
   ],
   # Rank 6 (赤ずきんボス)
   [

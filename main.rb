@@ -27,7 +27,7 @@ $MAP = [
 ]
 
 $ACTION_NAME = ['', '攻撃', '防御', '集中', '警戒', '紅天撃', '豆料理', 'ねこパンチ', '灰姫の祈祷', '攻撃＋', '防御＋', '集中＋', '警戒＋']
-$ENEMY_ACTION_NAME = ['', '攻撃', '防御', '怒り', '警戒', '毒牙', 'ブレス', '呪い', '激昂', '攻撃＋', '防御＋', '警戒＋', '威圧', '呪詛', '連撃掌', '遠吠え']
+$ENEMY_ACTION_NAME = ['', '攻撃', '防御', '怒り', '警戒', '毒牙', 'ブレス', '呪い', '激昂', '攻撃＋', '防御＋', '警戒＋', '威圧', '呪詛', '連撃掌', '遠吠え', '闇刻波', '致死の儀', '死霊撃', '練怨術', '解呪', '攻撃', '警戒']
 $ITEMS = [
   { name: '白銀の剣', stats_name: '攻撃力', stats: 'base_atk', value: 10 },
   { name: '赤銅の槍', stats_name: '攻撃力', stats: 'base_atk', value: 5 },
@@ -51,6 +51,9 @@ Image.register(:bg_story8, 'images/bg/story8.png')
 Image.register(:bg_event1, 'images/bg/event1.png')
 Image.register(:bg_event2, 'images/bg/event2.png')
 Image.register(:bg_event3, 'images/bg/event3.png')
+Image.register(:ending1, 'images/bg/ending1.png')
+Image.register(:ending2, 'images/bg/ending2.png')
+Image.register(:endscene, 'images/bg/endscene.png')
 
 Image.register(:map, 'images/map.png')
 Image.register(:player_hexa, 'images/player_hexa.png')
@@ -67,6 +70,7 @@ Image.register(:bar, 'images/bar.png')
 Image.register(:clock, 'images/clock.png')
 Image.register(:clock_hands, 'images/clock_hands.png')
 Image.register(:top_bar, 'images/top_bar.png')
+Image.register(:endtext, 'images/endtext.png')
 # 顔フレーム
 Image.register(:icon_frame, 'images/icon_frame.png')
 Image.register(:i_shirokishi, 'images/icon/shirokishi.png')
@@ -79,6 +83,7 @@ Image.register(:i_donkey, 'images/icon/donkey.png')
 Image.register(:i_rooster, 'images/icon/rooster.png')
 Image.register(:i_dog, 'images/icon/dog.png')
 Image.register(:i_dwarf, 'images/icon/dwarf.png')
+Image.register(:i_terror, 'images/icon/terror.png')
 # 敵
 Image.register(:enemy1, 'images/enemy/enemy1.png')
 Image.register(:enemy2, 'images/enemy/enemy2.png')
@@ -167,6 +172,8 @@ def game_init
   $map_now = 9
   $player[:x] = $MAP[$map_now][:coo][:x]
   $player[:y] = $MAP[$map_now][:coo][:y]
+  $endscene = false
+  $endtext = false
 end
 
 Window.load_resources do
@@ -185,8 +192,10 @@ Window.load_resources do
       $story.execute_story
     when :map
       if $endclock == 24 # 終焉の時計が24になったときの処理
-        $message = '？？？「時は満ちた……。この世界に満ちた暗黒の意志で、復活を果たす！」'
+        $speaker = 'terror'
+        $message = 'ストーリーテラー「時は満ちた……。この世界に満ちた暗黒の意志で、復活を果たす！」'
         if Input.key_push?(K_SPACE)
+          $speaker = 'shirokishi'
           $battle = Battle.new(4)
           $scene = :battle
         end
@@ -298,6 +307,8 @@ Window.load_resources do
       Window.draw(0, 0, Image["bg_event#{$event_no}"]) if (1..3) === $event_no
     when :story
       Window.draw(0, 0, Image["bg_story#{$story_id}"])
+    when :ending
+      $ending.execute_ending
     end
 
     # Bar
@@ -339,7 +350,7 @@ Window.load_resources do
     end
     Window.draw_font(Window.width - 316, 600, "攻撃力：#{$player_stats[:base_atk]}", $font16)
     Window.draw_font(Window.width - 156, 600, "防御力：#{$player_stats[:base_def]}", $font16)
-    Window.draw_font(Window.width - 316, 626, "敏捷性：#{100 - $player_stats[:sp]}", $font16)
+    Window.draw_font(Window.width - 316, 626, "敏捷性：#{120 - $player_stats[:sp]}", $font16)
     Window.draw_font(Window.width - 156, 626, "経験値：#{$player_stats[:exp]}", $font16)
     Window.draw_box_fill(Window.width - 210, 552, Window.width - 10, 572, [0, 0, 0])
     Window.draw_box_fill(Window.width - 208, 554, Window.width - 208 + (196 * $player_stats[:hp] / $player_stats[:max_hp]).floor, 570, [0, 255, 0])
@@ -347,7 +358,7 @@ Window.load_resources do
 
     if $scene == :gameover # ゲームオーバー表示
       Window.draw_box_fill(0, 0, Window.width, Window.height, [0, 0, 0])
-      Window.draw_font((Window.width - $font64.get_width('GAMEOVER')) / 2, Window.height / 2 - 16, 'GAMEOVER', $font64)
+      Window.draw_font((Window.width - 320) / 2, Window.height / 2 - 16, 'GAMEOVER', $font64)
       Window.draw_font((Window.width - $font32.get_width('PUSH SPACE KEY TO RESTART')) / 2, Window.height / 2 + 60, 'PUSH SPACE KEY TO RESTART', $font32)
     end
 
@@ -356,6 +367,12 @@ Window.load_resources do
       Window.draw(0, 0, Image[:bg_title])
       Window.draw(Window.width / 2 - 458, 200, Image[:logo])
       Window.draw_font((Window.width - $font32.get_width('PUSH SPACE KEY')) / 2, Window.height / 2 + 80, 'PUSH SPACE KEY', $font32)
+    end
+
+    if $scene == :ending
+      Window.draw(0, 0, Image["ending#{$ending_bg}"])
+      Window.draw(0, 0, Image[:endscene]) if $endscene
+      Window.draw(Window.width / 2 - 178, Window.height / 2 - 70 ,Image[:endtext]) if $endtext
     end
 
     next unless $fade_flg # フェード処理
@@ -425,9 +442,13 @@ class Rest
         $player_stats[:base_def] += 1
         $message2 = '防御力が上がった'
       elsif Input.key_push?(K_3) && $player_stats[:exp].positive?
-        $player_stats[:exp] -= 1
-        $player_stats[:sp] -= 1
-        $message2 = '敏捷性が上がった'
+        if $player_stats[:sp] > 20
+          $player_stats[:exp] -= 1
+          $player_stats[:sp] -= 1
+          $message2 = '敏捷性が上がった'
+        else
+          $message2 = '敏捷性はこれ以上上がらない'
+        end
       elsif Input.key_push?(K_4)
         $scene = :map
         $selects = []
@@ -667,7 +688,7 @@ class Event
           @steps += 3
           $speaker = 'dog'
         elsif Input.key_push?(K_4)
-          $player_stats[:exp] += 50
+          $player_stats[:exp] += 5
           $selects = []
           @steps += 4
           $speaker = 'cat2'
@@ -763,6 +784,47 @@ class Event
     when 5
       $scene = :rest
       $rest = Rest.new
+    end
+  end
+end
+
+class Ending
+  def initialize
+    @steps = 0
+  end
+
+  def execute_ending
+    case @steps
+    when 0
+      $speaker = 'terror'
+      $ending_bg = 1
+      $message = 'ストーリーテラー「ぐはあ……この私が……」'
+      @steps += 1 if Input.key_push?(K_SPACE)
+    when 1
+      $speaker = 'shirokishi'
+      $message = '「諦めろ……これでとどめだ！」'
+      @steps += 1 if Input.key_push?(K_SPACE)
+    when 2
+      $speaker = 'terror'
+      $message = 'ストーリーテラー「ぐわあぁぁ…………！！」'
+      @steps += 1 if Input.key_push?(K_SPACE)
+    when 3
+      $speaker = 'shirokishi'
+      $ending_bg = 2
+      $message = '「決着が……ついたな」'
+      @steps += 1 if Input.key_push?(K_SPACE)
+    when 4
+      $message = '「世界が美しい元の姿に戻っていく……」'
+      if Input.key_push?(K_SPACE)
+        @steps += 1
+        fade_in
+      end
+    when 5
+      $endscene = true
+      @steps += 1 if Input.key_push?(K_SPACE)
+    when 6
+      $endtext = true
+      game_init if Input.key_push?(K_SPACE)
     end
   end
 end
@@ -912,6 +974,10 @@ class Battle
         end
         $scene = :map
         $battle_ex_message = ''
+        if @enemy_id == 13
+          $scene = :ending
+          $ending = Ending.new
+        end
       end
     when :lose
       $message = '敗北した'
@@ -963,10 +1029,11 @@ class Battle
       @enemy_hp = 0 if @enemy_hp.negative?
       $message = "ねこパンチ！#{@give_dmg}ダメージを与えた"
     when 8 # 灰姫の祈祷
-      @gain_hp = $player_stats[:max_hp] * 0.15
+      @gain_hp = ($player_stats[:max_hp] * 0.15).floor
       $player_stats[:hp] += @gain_hp
-      $player_stats[:hp] = $player_stats[:max_hp] if $player_stats[:hp] > $player_stats[:max_hp] 
-      $message = "シンデレラの祈りで体力を#{@gain_hp}回復した"
+      $player_stats[:hp] = $player_stats[:max_hp] if $player_stats[:hp] > $player_stats[:max_hp]
+      $player_stats[:abnormal] = []
+      $message = "シンデレラの祈りで体力を#{@gain_hp}回復し、状態異常を治癒した"
     when 9 # 攻撃＋
       @give_dmg = (($player_stats[:base_atk] + 30) * ($player_stats[:atk] + @player_tmp_atk) / (@enemy_stats[:def] + @enemy_tmp_def) - @enemy_stats[:base_def]).floor
       @give_dmg = 0 if @give_dmg.negative?
@@ -1047,7 +1114,7 @@ class Battle
       @enemy_tmp_def = 20
       $message = "#{@enemy_stats[:name]}の警戒行動で#{@take_dmg}ダメージを受けた"
     when 12 # 威圧
-      @player_tmp_def -= 50
+      @player_tmp_def -= 25
       @take_dmg = ((@enemy_stats[:base_atk] + 20) * (@enemy_stats[:atk] + @enemy_tmp_atk) / ($player_stats[:def] + @player_tmp_def) - $player_stats[:base_def]).floor
       @take_dmg = 0 if @take_dmg.negative?
       $player_stats[:hp] = $player_stats[:hp] - @take_dmg
@@ -1070,6 +1137,45 @@ class Battle
       @enemy_tmp_atk += 20
       @enemy_tmp_def = 30
       $message = "#{@enemy_stats[:name]}は遠吠えしてステータスを上げた"
+    when 16 # デバフ＋攻撃
+      @player_tmp_def -= 25
+      @take_dmg = ((@enemy_stats[:base_atk] + 25) * (@enemy_stats[:atk] + @enemy_tmp_atk) / ($player_stats[:def] + @player_tmp_def) - $player_stats[:base_def]).floor
+      @take_dmg = 0 if @take_dmg.negative?
+      $player_stats[:hp] = $player_stats[:hp] - @take_dmg
+      $player_stats[:hp] = 0 if $player_stats[:hp].negative?
+      $message = "#{@enemy_stats[:name]}の闇刻波で#{@take_dmg}ダメージを受けた"
+    when 17 # 状態異常全て
+      $player_stats[:abnormal].push(0) unless $player_stats[:abnormal].include?(0)
+      $player_stats[:abnormal].push(1) unless $player_stats[:abnormal].include?(1)
+      $player_stats[:abnormal].push(2) unless $player_stats[:abnormal].include?(2)
+      $message = "#{@enemy_stats[:name]}の致死の儀で、呪い・毒・火傷を受けた"
+    when 18 # 防御無視攻撃
+      @take_dmg = ((@enemy_stats[:base_atk] + 40) * (@enemy_stats[:atk] + @enemy_tmp_atk) / $player_stats[:def] - $player_stats[:base_def]).floor
+      @take_dmg = 0 if @take_dmg.negative?
+      $player_stats[:hp] = $player_stats[:hp] - @take_dmg
+      $player_stats[:hp] = 0 if $player_stats[:hp].negative?
+      $message = "#{@enemy_stats[:name]}の死霊撃で#{@take_dmg}ダメージを受けた"
+    when 19 # 攻撃防御バフ
+      @enemy_tmp_atk += 30
+      @enemy_tmp_def = 30
+      $message = "#{@enemy_stats[:name]}は練怨術でステータスを上げた"
+    when 20 # バフ解除
+      @player_tmp_atk = 0
+      @player_tmp_def = 0
+      $message = "#{@enemy_stats[:name]}の解呪で強化が無効化された"
+    when 21 # 攻撃
+      @take_dmg = ((@enemy_stats[:base_atk] + 50) * (@enemy_stats[:atk] + @enemy_tmp_atk) / ($player_stats[:def] + @player_tmp_def) - $player_stats[:base_def]).floor
+      @take_dmg = 0 if @take_dmg.negative?
+      $player_stats[:hp] = $player_stats[:hp] - @take_dmg
+      $player_stats[:hp] = 0 if $player_stats[:hp].negative?
+      $message = "#{@enemy_stats[:name]}の攻撃で#{@take_dmg}ダメージを受けた"
+    when 22 # 警戒
+      @take_dmg = ((@enemy_stats[:base_atk] + 40) * (@enemy_stats[:atk] + @enemy_tmp_atk) / ($player_stats[:def] + @player_tmp_def) - $player_stats[:base_def]).floor
+      @take_dmg = 0 if @take_dmg.negative?
+      $player_stats[:hp] = $player_stats[:hp] - @take_dmg
+      $player_stats[:hp] = 0 if $player_stats[:hp].negative?
+      @enemy_tmp_def = 30
+      $message = "#{@enemy_stats[:name]}の警戒行動で#{@take_dmg}ダメージを受けた"
     end
   end
 end

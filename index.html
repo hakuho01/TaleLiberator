@@ -7,6 +7,16 @@
     <script type="text/ruby">
       DXOpal.dump_error{ require_remote "main.rb?#{Time.now}" }
     </script>
+    <script>
+      (function(d) {
+        var config = {
+          kitId: 'ynr6shw',
+          scriptTimeout: 3000,
+          async: true
+        },
+        h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
+      })(document);
+    </script>
   </head>
 
   <body style="background: #efefef;">
@@ -47,6 +57,10 @@
         <ul>
           <li>イベントか戦闘か休息が発生します</li>
         </ul>
+        <li>宝マス</li>
+        <ul>
+          <li>装備品を得てステータスが上昇します</li>
+        </ul>
         <li>話マス</li>
         <ul>
           <li>中ボス戦が発生します。撃破すると物語のキャラが仲間になり、新たなスキルを得られます</li>
@@ -55,6 +69,7 @@
       <h2>更新履歴</h2>
       <ul>
         <li>v0.10(0528_0004): とりあえず形は完成とする</li>
+        <li>v0.20(0528_1830): エンディング実装、敵の強さ調整</li>
       </ul>
     </div>
   </body>
