@@ -115,6 +115,17 @@ Image.register(:poison, 'images/icon/poison.png')
 Image.register(:fire, 'images/icon/fire.png')
 Image.register(:curse, 'images/icon/curse.png')
 
+Sound.register(:battle, 'music/battle.mp3')
+Sound.register(:rest, 'music/rest.mp3')
+Sound.register(:boss, 'music/boss.mp3')
+Sound.register(:story, 'music/story.mp3')
+Sound.register(:item, 'music/item.mp3')
+Sound.register(:map, 'music/map.mp3')
+Sound.register(:event, 'music/event.mp3')
+Sound.register(:battleend, 'music/battleend.mp3')
+Sound.register(:ending, 'music/ending.mp3')
+Sound.register(:terror, 'music/terror.mp3')
+
 def move_player(direction)
   return unless $MAP[$map_now][direction]
 
@@ -174,6 +185,33 @@ def game_init
   $player[:y] = $MAP[$map_now][:coo][:y]
   $endscene = false
   $endtext = false
+  $bgm = nil
+end
+
+def bgm_player
+  Sound[:battle].stop
+  Sound[:rest].stop
+  Sound[:story].stop
+  Sound[:item].stop
+  Sound[:boss].stop
+  Sound[:map].stop
+  Sound[:event].stop
+  Sound[:terror].stop
+  Sound[:battleend].stop
+  Sound[:ending].stop
+
+  case $bgm
+  when 1
+    Sound[:boss].play
+  when 2
+    Sound[:ending].play
+  when 3
+    Sound[:terror].play
+  when 4
+    Sound[:battleend].play
+  else
+    Sound[$scene].play unless $scene == :gameover
+  end
 end
 
 Window.load_resources do
@@ -196,8 +234,9 @@ Window.load_resources do
         $message = 'ストーリーテラー「時は満ちた……。この世界に満ちた暗黒の意志で、復活を果たす！」'
         if Input.key_push?(K_SPACE)
           $speaker = 'shirokishi'
-          $battle = Battle.new(4)
           $scene = :battle
+          $bgm = 3
+          $battle = Battle.new(4)
         end
       else
         $top_bar_message = '進むタイルを選べ'
@@ -217,8 +256,8 @@ Window.load_resources do
               case $mapevents[m]
               when 0 # start
               when 1 # battle
-                $battle = Battle.new(($endclock / 6).floor)
                 $scene = :battle
+                $battle = Battle.new(($endclock / 6).floor)
               when 2 # event
                 $scene = :event
                 $event_no = rand(1..5)
@@ -250,6 +289,7 @@ Window.load_resources do
     when :start
       if Input.key_push?(K_SPACE)
         $scene = :map
+        bgm_player
         fade_in
       end
     when :gameover
@@ -395,6 +435,8 @@ class Rest
     $bar_message = '休息'
     $top_bar_message = '戦いに備えよう'
     @rest_step = 0
+
+    bgm_player
   end
 
   def execute_rest
@@ -429,7 +471,10 @@ class Rest
       end
     when 1
       $message = '体を休めて体力を回復した'
-      $scene = :map if Input.key_push?(K_SPACE)
+      if Input.key_push?(K_SPACE)
+        $scene = :map
+        bgm_player
+      end
     when 2
       $message = '経験値をステータスに変換する'
       $selects = ['攻撃力', '防御力', '敏捷性', '終了する']
@@ -453,6 +498,7 @@ class Rest
         $scene = :map
         $selects = []
         $message2 = ''
+        bgm_player
       end
     when 3
       if @get_skill
@@ -464,7 +510,10 @@ class Rest
       else
         $message = '経験値が足りない'
       end
-      $scene = :map if Input.key_push?(K_SPACE)
+      if Input.key_push?(K_SPACE)
+        $scene = :map
+        bgm_player
+      end
     end
   end
 end
@@ -479,6 +528,7 @@ class Item
       break unless $get_items.include?(@get_item_id)
     end
     $get_items.push(@get_item_id)
+    bgm_player
   end
 
   def execute_item
@@ -493,6 +543,7 @@ class Item
       $message = "#{$ITEMS[@get_item_id][:stats_name]}が上がった"
       if Input.key_push?(K_SPACE)
         $scene = :map
+        bgm_player
         if $map_now > 9
           m = $map_now - 1
         elsif $map_now < 9
@@ -509,6 +560,7 @@ class Story
   def initialize
     $bar_message = '物語の世界'
     @steps = 0
+    bgm_player
   end
 
   def execute_story
@@ -638,6 +690,7 @@ class Event
   def initialize
     @steps = 0
     $bar_message = 'イベント'
+    bgm_player
   end
 
   def execute_event
@@ -684,6 +737,7 @@ class Event
           $speaker = 'rooster'
         elsif Input.key_push?(K_3)
           $player_stats[:sp] -= ($player_stats[:sp] * 0.1).floor
+          $player_stats[:sp] = 20 if $player_stats[:sp] < 20
           $selects = []
           @steps += 3
           $speaker = 'dog'
@@ -699,6 +753,7 @@ class Event
         if Input.key_push?(K_SPACE)
           $message2 = ''
           $scene = :map
+          bgm_player
           $speaker = 'shirokishi'
         end
       when 8
@@ -707,6 +762,7 @@ class Event
         if Input.key_push?(K_SPACE)
           $message2 = ''
           $scene = :map
+          bgm_player
           $speaker = 'shirokishi'
         end
       when 9
@@ -715,6 +771,7 @@ class Event
         if Input.key_push?(K_SPACE)
           $message2 = ''
           $scene = :map
+          bgm_player
           $speaker = 'shirokishi'
         end
       when 10
@@ -723,6 +780,7 @@ class Event
         if Input.key_push?(K_SPACE)
           $message2 = ''
           $scene = :map
+          bgm_player
           $speaker = 'shirokishi'
         end
       end
@@ -741,7 +799,8 @@ class Event
           $player_stats[:hp] = $player_stats[:max_hp] if $player_stats[:hp] > $player_stats[:max_hp]
           $player_stats[:base_atk] += 5
           $player_stats[:base_def] += 5
-          $player_stats[:sp] += 5
+          $player_stats[:sp] -= 5
+          $player_stats[:sp] = 20 if $player_stats[:sp] < 20
         end
       when 2
         $speaker = 'shirokishi'
@@ -749,6 +808,7 @@ class Event
         $message2 = '装備を整備してもらってステータスが上昇した'
         if Input.key_push?(K_SPACE)
           $scene = :map
+          bgm_player
           $message2 = ''
         end
       end
@@ -773,10 +833,16 @@ class Event
         end
       when 2
         $message = '体力が全回復した'
-        $scene = :map if Input.key_push?(K_SPACE)
+        if Input.key_push?(K_SPACE)
+          $scene = :map
+          bgm_player
+        end
       when 3
         $message = '体力の最大値が上がった'
-        $scene = :map if Input.key_push?(K_SPACE)
+        if Input.key_push?(K_SPACE)
+          $scene = :map
+          bgm_player
+        end
       end
     when 4
       $scene = :battle
@@ -818,13 +884,18 @@ class Ending
       if Input.key_push?(K_SPACE)
         @steps += 1
         fade_in
+        $bgm = 2
+        bgm_player
       end
     when 5
       $endscene = true
       @steps += 1 if Input.key_push?(K_SPACE)
     when 6
       $endtext = true
-      game_init if Input.key_push?(K_SPACE)
+      if Input.key_push?(K_SPACE)
+        Sound[:ending].stop
+        game_init
+      end
     end
   end
 end
@@ -853,6 +924,10 @@ class Battle
 
     $top_bar_message = "#{@enemy_stats[:name]}が現れた"
     @battle_phase = check_speed
+
+    $bgm = 1 if (5..8) === rank
+    bgm_player
+    $bgm = 0
   end
 
   def check_speed
@@ -907,6 +982,9 @@ class Battle
       if Input.key_push?(K_SPACE)
         @battle_phase = check_speed
         if @enemy_hp.zero?
+          $bgm = 4
+          bgm_player
+          $bgm = 0
           @battle_phase = :win
           $player_stats[:exp] += @enemy_stats[:exp]
         end
@@ -974,6 +1052,7 @@ class Battle
         end
         $scene = :map
         $battle_ex_message = ''
+        bgm_player
         if @enemy_id == 13
           $scene = :ending
           $ending = Ending.new
@@ -982,7 +1061,10 @@ class Battle
     when :lose
       $message = '敗北した'
       $selects = []
-      $scene = :gameover if Input.key_push?(K_SPACE)
+      if Input.key_push?(K_SPACE)
+        $scene = :gameover
+        bgm_player
+      end
     end
 
     if (@battle_phase == :player_select) || (@battle_phase == :player_action)
@@ -1047,11 +1129,11 @@ class Battle
       @player_tmp_atk += 20
       $message = '集中して攻撃力が上がった'
     when 12 # 警戒＋
-      @give_dmg = (($player_stats[:base_atk] + 15) * ($player_stats[:atk] + @player_tmp_atk) / (@enemy_stats[:def] + @enemy_tmp_def) - @enemy_stats[:base_def]).floor
+      @give_dmg = (($player_stats[:base_atk] + 20) * ($player_stats[:atk] + @player_tmp_atk) / (@enemy_stats[:def] + @enemy_tmp_def) - @enemy_stats[:base_def]).floor
       @give_dmg = 0 if @give_dmg.negative?
       @enemy_hp -= @give_dmg
       @enemy_hp = 0 if @enemy_hp.negative?
-      @player_tmp_def = 30
+      @player_tmp_def = 50
       $message = "警戒しながら攻撃！#{@give_dmg}ダメージを与えた"
     end
   end
@@ -1174,7 +1256,7 @@ class Battle
       @take_dmg = 0 if @take_dmg.negative?
       $player_stats[:hp] = $player_stats[:hp] - @take_dmg
       $player_stats[:hp] = 0 if $player_stats[:hp].negative?
-      @enemy_tmp_def = 30
+      @enemy_tmp_def = 50
       $message = "#{@enemy_stats[:name]}の警戒行動で#{@take_dmg}ダメージを受けた"
     end
   end
