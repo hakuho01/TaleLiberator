@@ -17,6 +17,13 @@
         h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
       })(document);
     </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          setTimeout(function() {
+              document.getElementById("dxopal-canvas").style.display = "block";
+          }, 5000);
+      });
+  </script>
     <style>
       dl{
         display: flex;
@@ -36,7 +43,7 @@
 
   <body style="background: #efefef;">
     <div style="text-align:center; margin-top: 36px;">
-      <canvas id="dxopal-canvas" style="border: 4px solid #ccc;"></canvas>
+      <canvas id="dxopal-canvas" style="border: 4px solid #ccc; display: none; margin:0 auto;"></canvas>
     </div>
     <div id="dxopal-errors"></div>
     <div style="width: 1280px; margin:0 auto;">
@@ -124,6 +131,7 @@
       <ul>
         <li>v0.10(0528_0004): とりあえず形は完成とする</li>
         <li>v0.20(0528_1830): エンディング実装、敵の強さ調整</li>
+        <li>v0.30(0601_0216): BGMと遅延読み込み実装</li>
       </ul>
     </div>
   </body>
