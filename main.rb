@@ -148,11 +148,11 @@ end
 Window.width = 1280
 Window.height = 720
 
-$font16 = Font.new(16, 'ヒラギノ角ゴ')
-$font20 = Font.new(20, 'ヒラギノ角ゴ')
-$font24m = Font.new(24, 'A-OTF UD黎ミン Pr6N L')
-$font32 = Font.new(32, 'Futura PT')
-$font64 = Font.new(64, 'Futura PT')
+$font16 = Font.new(16, 'hiragino-kaku-gothic-pron')
+$font20 = Font.new(20, 'hiragino-kaku-gothic-pron')
+$font24m = Font.new(24, 'a-otf-ud-reimin-pr6n')
+$font32 = Font.new(32, 'Futura-PT')
+$font64 = Font.new(64, 'Futura-PT')
 
 def game_init
   $fade_flg = false
