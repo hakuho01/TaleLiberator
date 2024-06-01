@@ -306,7 +306,7 @@ Window.load_resources do
 
         n = i
         n += 1 if i >= 9
-        Window.draw($MAP[n][:coo][:x] - 16, $MAP[n][:coo][:y] - 16, Image["icon#{event_id}"])
+        Window.draw($MAP[n][:coo][:x] - 27, $MAP[n][:coo][:y] - 16, Image["icon#{event_id}"])
       end
       Window.draw($player[:x] - 32, $player[:y] - 36, Image[:player_hexa])
 
